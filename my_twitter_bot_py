@@ -1,0 +1,46 @@
+import tweepy
+import time
+
+CONSUMER_KEY= 'mYzz8NNRMfL5HhQFi0k6gdMozm'
+CONSUMER_SECRET = 'Z3dKCI60XzOZUUnFyCqFWpP1gi2zovHdSood1znu6oGy4Qu7EWZ'
+ACCESS_KEY = '1564812874-O4aHfe4QcJkq5lhKIb1fOQh3z9nqf6Yfc0UTDIM1'
+ACCESS_SECRET = 'LLaYsIx3HEgqx1nSBCdGQKjjaa5JYyJ6mP2hCffiEePIwL'
+
+auth = tweepy.OAuthHandler( CONSUMER_KEY, CONSUMER_SECRET )
+auth.set_access_token( ACCESS_KEY, ACCESS_SECRET )
+api = tweepy.API(auth)
+
+FILE_NAME = 'last_seen_id.txt'
+
+def retrieve_last_seen_id(file_name):
+    file_read = open(file_name, 'r')
+    last_seen_id = int(file_read.read())
+    file_read.close()
+    return last_seen_id
+
+def store_last_seen_id(file_name, last_seen_id):
+    file_write = open(file_name, 'w')
+    file_write.write(str(last_seen_id))
+    file_write.close()
+    return
+
+def reply_to_tweet():
+    print('retrieving and replying to tweets')
+    last_seen_id = retrieve_last_seen_id(FILE_NAME)
+    store_last_seen_id(FILE_NAME, last_seen_id)
+
+    mentions = api.mentions_timeline( last_seen_id, tweet_mode = 'extended')
+    #mentions = api.mentions_timeline()
+    #api.update_status('@RuchiGupta237, Hello Ruchi, this is bot via terminal', 1103259168088121344 )
+    for mention in mentions:
+        print( str(mention.id) + " - " + mention.full_text)
+        last_seen_id = mention.id
+        store_last_seen_id(FILE_NAME, last_seen_id)
+        if 'hello' in mention.full_text.lower():
+            print('Hello back to you!')
+            print('responding back via bot...')
+            api.update_status( '@' + mention.user.screen_name + ' responding back via bot from IDE...', mention.id )
+
+while True:
+    reply_to_tweet()
+    time.sleep(2)
